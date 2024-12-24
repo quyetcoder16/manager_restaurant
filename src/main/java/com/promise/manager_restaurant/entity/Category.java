@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Table(name = "category")
 @Data
@@ -19,4 +21,10 @@ public class Category extends BaseEntity {
 
     @Column(name = "name_category")
     String nameCategory;
+
+    @OneToMany(mappedBy = "category")
+    List<FoodCategory> listFoodCategory;
+
+    @OneToMany(mappedBy = "category")
+    List<RestaurantCategory> listRestaurantCategory;
 }

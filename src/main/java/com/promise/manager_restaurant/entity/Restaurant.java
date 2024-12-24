@@ -56,4 +56,17 @@ public class Restaurant extends BaseEntity {
 
     @OneToMany(mappedBy = "restaurant")
     List<Food> listFood;
+
+    @OneToMany(mappedBy = "restaurant")
+    List<RatingRestaurant> listRatingRestaurant;
+
+    @OneToMany(mappedBy = "restaurant")
+    List<RestaurantCategory> listRestaurantCategory;
+
+    @OneToMany(mappedBy = "restaurant")
+    List<Promo> listPromo;
+
+    @OneToMany(mappedBy = "restaurant")
+    List<Orders> listOrder;
+
 }
