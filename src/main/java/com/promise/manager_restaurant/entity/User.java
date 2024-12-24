@@ -50,4 +50,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     List<Orders> listOrder;
 
+    @OneToMany(mappedBy = "manager")
+    List<Restaurant> listRestaurant;
+
 }

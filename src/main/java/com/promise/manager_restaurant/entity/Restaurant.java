@@ -51,6 +51,10 @@ public class Restaurant extends BaseEntity {
     @Column(name = "email")
     String email;
 
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    User manager;
+
     @OneToMany(mappedBy = "restaurant")
     List<Gallery> listGallery;
 

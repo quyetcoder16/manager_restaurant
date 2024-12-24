@@ -14,7 +14,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-#
-#logging:
-#  level:
-#    root: warn
+
+logging:
+  level:
+    root: warn
