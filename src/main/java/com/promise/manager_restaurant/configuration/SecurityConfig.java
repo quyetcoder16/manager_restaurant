@@ -1,5 +1,7 @@
 package com.promise.manager_restaurant.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,6 +11,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -16,7 +25,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/auth/register","/auth/token", "/auth/introspect", "/users", "/auth/logout", "/auth/refresh"};
+
+    @Autowired
+    private CustomJwtDecoder customJwtDecoder;
+
+    private final String[] PUBLIC_ENDPOINTS = {
+            "/auth/register"
+            , "/auth/login",
+            "/auth/introspect",
+            "/users",
+            "/auth/logout",
+            "/auth/refresh_token"
+    };
 
     /**
      * Cấu hình chuỗi filter bảo mật.
@@ -42,6 +62,21 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable); // Vô hiệu hóa CSRF (phù hợp với API REST).
 
         return httpSecurity.build(); // Trả về chuỗi filter bảo mật đã cấu hình.
+    }
+
+    /**
+     * Cấu hình chuyển đổi thông tin xác thực từ JWT.
+     *
+     * @return JwtAuthenticationConverter đối tượng chuyển đổi xác thực JWT.
+     */
+    JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(""); // Bỏ tiền tố mặc định "ROLE_" để khớp với dữ liệu trong JWT.
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter); // Sử dụng converter để ánh xạ quyền.
+
+        return jwtAuthenticationConverter;
     }
 
     /**
