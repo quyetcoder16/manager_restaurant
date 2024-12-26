@@ -33,7 +33,6 @@ public class SecurityConfig {
             "/auth/register"
             , "/auth/login",
             "/auth/introspect",
-            "/users",
             "/auth/logout",
             "/auth/refresh_token"
     };
@@ -53,12 +52,12 @@ public class SecurityConfig {
                                 // .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name()) // Chỉ admin được phép GET /users.
                                 .anyRequest().authenticated() // Yêu cầu xác thực cho các endpoint khác.
                 )
-//                .oauth2ResourceServer(oauth2 ->
-//                        oauth2.jwt(jwtConfigurer ->
-//                                        jwtConfigurer.decoder(customJwtDecoder) // Sử dụng jwtDecoder để giải mã JWT.
-//                                                .jwtAuthenticationConverter(jwtAuthenticationConverter())) // Cấu hình ánh xạ quyền từ token.
-//                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Xử lý lỗi xác thực JWT.
-//                )
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwtConfigurer ->
+                                        jwtConfigurer.decoder(customJwtDecoder) // Sử dụng jwtDecoder để giải mã JWT.
+                                                .jwtAuthenticationConverter(jwtAuthenticationConverter())) // Cấu hình ánh xạ quyền từ token.
+                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Xử lý lỗi xác thực JWT.
+                )
                 .csrf(AbstractHttpConfigurer::disable); // Vô hiệu hóa CSRF (phù hợp với API REST).
 
         return httpSecurity.build(); // Trả về chuỗi filter bảo mật đã cấu hình.

@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -119,5 +121,34 @@ public class GlobalExceptionHandler {
         // Lấy giá trị "min" từ attributes và thay thế vào thông điệp
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
         return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+    }
+
+    @ExceptionHandler(value = AuthenticationServiceException.class)
+    ResponseEntity<ApiResponse> handlingAuthenticationServiceException(AuthenticationServiceException exception) {
+        System.out.println("122223-----");
+        // Lấy thông báo lỗi mặc định từ FieldError
+        String enumKey = exception.getMessage();
+
+        // Gán mã lỗi mặc định là ErrorCode.INVALID_KEY
+        ErrorCode errorCode = ErrorCode.INVALID_KEY;
+
+
+        try {
+            // Kiểm tra nếu thông điệp tương ứng với một mã lỗi trong ErrorCode
+            errorCode = ErrorCode.valueOf(enumKey);
+
+
+        } catch (IllegalArgumentException e) {
+
+        }
+
+
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(errorCode.getErrorMsg());
+        apiResponse.setCode(errorCode.getErrorCode());
+
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(apiResponse);
     }
 }

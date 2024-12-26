@@ -6,7 +6,6 @@ import com.promise.manager_restaurant.dto.request.auth.IntrospectRequest;
 import com.promise.manager_restaurant.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -54,7 +53,7 @@ public class CustomJwtDecoder implements JwtDecoder {
 
             // Nếu máy chủ trả về không hợp lệ, ném ngoại lệ JwtException
             if (!response.isValid())
-                throw new JwtException("Token invalid");
+                throw new JwtException("INVALID_TOKEN");
         } catch (JOSEException | ParseException e) {
             // Xử lý các lỗi liên quan đến JWT hoặc parse dữ liệu
             throw new JwtException(e.getMessage());

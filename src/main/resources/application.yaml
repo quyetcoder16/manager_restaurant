@@ -22,5 +22,5 @@ logging:
 jwt:
   access-token-signer-key: "250E7YNtQbcJHBa4pG9oI4xrzPM3SEt1"
   refresh-token-signer-key: "q1LxNdWK4drf2QELJ6DAqwaSLvXtpZMq"
-  valid-duration: 10 # in second
-  refreshable-duration: 60 # in second
+  valid-duration: 60 # in second
+  refreshable-duration: 120 # in second
