@@ -12,10 +12,7 @@ import com.promise.manager_restaurant.dto.request.auth.*;
 import com.promise.manager_restaurant.dto.response.auth.AuthenticationResponse;
 import com.promise.manager_restaurant.dto.response.auth.IntrospectResponse;
 import com.promise.manager_restaurant.dto.response.auth.RegisterResponse;
-import com.promise.manager_restaurant.entity.InvalidatedToken;
-import com.promise.manager_restaurant.entity.Permission;
-import com.promise.manager_restaurant.entity.Role;
-import com.promise.manager_restaurant.entity.User;
+import com.promise.manager_restaurant.entity.*;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.exception.ErrorCode;
 import com.promise.manager_restaurant.mapper.UserMapper;
@@ -28,6 +25,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -36,8 +34,10 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
+
 
 @Slf4j
 @Service
@@ -45,11 +45,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthServiceImpl implements AuthService {
 
+    // Các repository và mapper để tương tác với cơ sở dữ liệu
     UserRepository userRepository;
     UserMapper userMapper;
-    PasswordEncoder passwordEncoder;
     InvalidatedTokenRepository invalidatedTokenRepository;
 
+    // Các giá trị được cấu hình từ tệp cấu hình ứng dụng
     @NonFinal
     @Value("${jwt.access-token-signer-key}")
     private String ACCESS_TOKEN_SIGNER_KEY;
@@ -66,66 +67,96 @@ public class AuthServiceImpl implements AuthService {
     @Value("${jwt.refreshable-duration}")
     protected Long REFRESHABLE_DURATION;
 
-
+    /**
+     * Đăng ký người dùng mới.
+     *
+     * @param registerRequest Thông tin đăng ký từ client.
+     * @return Thông tin phản hồi sau khi đăng ký thành công.
+     */
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
+        // Kiểm tra xem email đã tồn tại chưa
         if (userRepository.existsUserByEmail(registerRequest.getEmail())) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+            throw new AppException(ErrorCode.USER_EXISTED); // Ném lỗi nếu email đã tồn tại
         }
 
+        // Chuyển đổi từ DTO sang entity và mã hóa mật khẩu
         User user = userMapper.toUser(registerRequest);
-
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setIsActive(true);
 
+        // Lưu người dùng mới vào cơ sở dữ liệu
         return userMapper.toRegisterResponse(userRepository.save(user));
     }
 
-
+    /**
+     * Xử lý đăng nhập người dùng.
+     *
+     * @param authenticationRequest Thông tin đăng nhập từ client.
+     * @return Access Token và Refresh Token nếu đăng nhập thành công.
+     */
     @Override
     public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
-        // Tìm người dùng theo email từ cơ sở dữ liệu.
+        // Tìm người dùng theo email
         var user = userRepository.findByEmail(authenticationRequest.getEmail()).orElseThrow(() -> {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED); // Ném lỗi nếu không tìm thấy người dùng.
+            throw new AppException(ErrorCode.USER_NOT_EXISTED); // Ném lỗi nếu không tìm thấy
         });
 
-
+        // Xác thực mật khẩu
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
 
         if (!authenticated) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED); // Ném lỗi nếu mật khẩu không khớp.
+            throw new AppException(ErrorCode.UNAUTHENTICATED); // Ném lỗi nếu mật khẩu không đúng
         }
 
+        // Tạo Access Token và Refresh Token
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);
 
+        // Trả về phản hồi xác thực
         return AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
 
+    /**
+     * Xác thực token.
+     *
+     * @param introspectRequest Yêu cầu introspect từ client.
+     * @return Trạng thái hợp lệ của token.
+     */
     @Override
     public IntrospectResponse introspect(IntrospectRequest introspectRequest) throws ParseException, JOSEException {
         var token = introspectRequest.getAccessToken();
         boolean isValid = true;
+
         try {
-            verifyToken(token, false);
+            verifyToken(token, false); // Kiểm tra token
         } catch (AppException e) {
-            isValid = false;
+            isValid = false; // Token không hợp lệ
         }
+
         return IntrospectResponse.builder()
                 .valid(isValid)
                 .build();
-
     }
 
+    /**
+     * Xử lý làm mới token.
+     *
+     * @param refreshRequest Yêu cầu làm mới từ client.
+     * @return Access Token và Refresh Token mới.
+     */
     @Override
     public AuthenticationResponse refreshToken(RefreshRequest refreshRequest) throws ParseException, JOSEException {
         var signedJWT = verifyToken(refreshRequest.getRefreshToken(), true);
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
+        // Lưu token đã bị vô hiệu hóa nếu hết hạn
         if (expiryTime.after(new Date())) {
             InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                     .idToken(jit)
@@ -136,10 +167,12 @@ public class AuthServiceImpl implements AuthService {
 
         var email = signedJWT.getJWTClaimsSet().getSubject();
 
+        // Tìm người dùng theo email
         var user = userRepository.findByEmail(email).orElseThrow(
                 () -> new AppException(ErrorCode.UNAUTHENTICATED)
         );
 
+        // Tạo Access Token và Refresh Token mới
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);
 
@@ -149,12 +182,18 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    /**
+     * Xử lý đăng xuất người dùng.
+     *
+     * @param logoutRequest Yêu cầu đăng xuất từ client.
+     */
     @Override
     public void logout(LogoutRequest logoutRequest) throws ParseException, JOSEException {
         try {
+            // Vô hiệu hóa Refresh Token
             var signedToken = verifyToken(logoutRequest.getRefresh_token(), true);
-            String jit = signedToken.getJWTClaimsSet().getJWTID(); // Lấy ID của token.
-            Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime(); // Lấy thời gian hết hạn.
+            String jit = signedToken.getJWTClaimsSet().getJWTID();
+            Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
             InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                     .idToken(jit)
@@ -164,13 +203,14 @@ public class AuthServiceImpl implements AuthService {
             invalidatedTokenRepository.save(invalidatedToken);
 
         } catch (AppException appException) {
-            log.info("token already expired");
+            log.info("Refresh token already expired");
         }
 
         try {
+            // Vô hiệu hóa Access Token
             var signedToken = verifyToken(logoutRequest.getAccess_token(), false);
-            String jit = signedToken.getJWTClaimsSet().getJWTID(); // Lấy ID của token.
-            Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime(); // Lấy thời gian hết hạn.
+            String jit = signedToken.getJWTClaimsSet().getJWTID();
+            Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
             InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                     .idToken(jit)
@@ -180,15 +220,23 @@ public class AuthServiceImpl implements AuthService {
             invalidatedTokenRepository.save(invalidatedToken);
 
         } catch (AppException appException) {
-            log.info("token already expired");
+            log.info("Access token already expired");
         }
     }
 
+    /**
+     * Kiểm tra tính hợp lệ của token.
+     *
+     * @param token     Token cần xác thực.
+     * @param isRefresh Xác định token là Refresh Token hay Access Token.
+     * @return Token JWT đã được xác thực.
+     */
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         String signerKey = isRefresh ? REFRESH_TOKEN_SIGNER_KEY : ACCESS_TOKEN_SIGNER_KEY;
         JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
 
+        // Kiểm tra thời gian hết hạn và tính hợp lệ của chữ ký
         Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
         boolean verified = signedJWT.verify(verifier);
 
@@ -196,13 +244,13 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
+        // Kiểm tra xem token có bị vô hiệu hóa không
         if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         return signedJWT;
     }
-
 
     /**
      * Xây dựng thông tin quyền hạn (scope) của người dùng.
@@ -212,18 +260,33 @@ public class AuthServiceImpl implements AuthService {
      */
     private String buildScope(User user) {
         StringJoiner scopeJoiner = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getListUserRole())) {
-            user.getListUserRole().forEach(userRole -> {
-                Role role = userRole.getRole();
-                scopeJoiner.add("ROLE_" + role.getRoleName()); // Thêm vai trò vào scope.
-                if (!CollectionUtils.isEmpty(role.getListRolePermission())) {
-                    role.getListRolePermission().forEach(rolePermission -> {
-                        Permission permission = rolePermission.getPermission();
-                        scopeJoiner.add(permission.getPermissionName()); // Thêm quyền vào scope.
-                    });
-                }
-            });
+
+        // Kiểm tra null và danh sách user roles
+        List<UserRole> userRoles = user.getListUserRole();
+        if (CollectionUtils.isEmpty(userRoles)) {
+            return scopeJoiner.toString(); // Trả về chuỗi rỗng nếu không có user roles
         }
+
+        userRoles.forEach(userRole -> {
+            Role role = userRole.getRole();
+            if (role == null) {
+                return; // Bỏ qua nếu role là null
+            }
+
+            scopeJoiner.add("ROLE_" + role.getRoleName()); // Thêm vai trò vào scope
+
+            // Kiểm tra null và danh sách role permissions
+            List<RolePermission> rolePermissions = role.getListRolePermission();
+            if (!CollectionUtils.isEmpty(rolePermissions)) {
+                rolePermissions.forEach(rolePermission -> {
+                    Permission permission = rolePermission.getPermission();
+                    if (permission != null) {
+                        scopeJoiner.add(permission.getPermissionName()); // Thêm quyền vào scope
+                    }
+                });
+            }
+        });
+
         return scopeJoiner.toString();
     }
 

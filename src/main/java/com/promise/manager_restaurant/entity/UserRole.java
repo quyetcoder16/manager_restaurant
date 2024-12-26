@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.entity;
 
+import com.promise.manager_restaurant.entity.keys.KeyUserRoleId;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,19 +13,15 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRole extends BaseEntity {
-    @Id
-    @Column(name = "user_id")
-    String userId;
 
-    @Id
-    @Column(name = "role_name")
-    String roleName;
+    @EmbeddedId
+    KeyUserRoleId keyUserRoleId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     User user;
 
     @ManyToOne
-    @JoinColumn(name = "role_name")
+    @JoinColumn(name = "role_name", insertable = false, updatable = false)
     Role role;
 }

@@ -31,7 +31,6 @@ public class CustomJwtDecoder implements JwtDecoder {
 
     // Dịch vụ xác thực được sử dụng để kiểm tra tính hợp lệ của token với máy chủ từ xa.
     @Autowired
-    @Lazy
     private AuthService authService;
 
     // Decoder NimbusJwtDecoder được sử dụng để thực hiện việc decode token sau khi xác minh.

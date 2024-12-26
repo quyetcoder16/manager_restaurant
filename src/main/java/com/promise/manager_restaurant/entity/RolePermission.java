@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.entity;
 
+import com.promise.manager_restaurant.entity.keys.KeyRolePermission;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,19 +13,16 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RolePermission extends BaseEntity {
-    @Id
-    @Column(name = "role_name")
-    String roleName;
 
-    @Id
-    @Column(name = "permission_name")
-    String permissionName;
+
+    @EmbeddedId
+    KeyRolePermission keyRolePermission;
 
     @ManyToOne
-    @JoinColumn(name = "role_name")
+    @JoinColumn(name = "role_name", insertable = false, updatable = false)
     Role role;
 
     @ManyToOne
-    @JoinColumn(name = "permission_name")
+    @JoinColumn(name = "permission_name", insertable = false, updatable = false)
     Permission permission;
 }

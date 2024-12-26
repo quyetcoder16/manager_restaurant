@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.entity;
 
+import com.promise.manager_restaurant.entity.keys.KeyOrderDetail;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,20 +13,16 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetail extends BaseEntity {
-    @Id
-    @Column(name = "order_id")
-    String orderId;
 
-    @Id
-    @Column(name = "food_id")
-    String foodId;
+    @EmbeddedId
+    KeyOrderDetail keyOrderDetail;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", insertable = false, updatable = false)
     Orders order;
 
     @ManyToOne
-    @JoinColumn(name = "food_id")
+    @JoinColumn(name = "food_id", insertable = false, updatable = false)
     Food food;
 
     @Column(name = "quantity")

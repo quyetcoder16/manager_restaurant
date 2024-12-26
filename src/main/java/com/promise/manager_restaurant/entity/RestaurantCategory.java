@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.entity;
 
+import com.promise.manager_restaurant.entity.keys.KeyRestaurantCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,19 +13,15 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RestaurantCategory extends BaseEntity {
-    @Id
-    @Column(name = "res_id")
-    String resId;
 
-    @Id
-    @Column(name = "cate_id")
-    String cateId;
+    @EmbeddedId
+    KeyRestaurantCategory keyRestaurantCategory;
 
     @ManyToOne
-    @JoinColumn(name = "res_id")
+    @JoinColumn(name = "res_id", insertable = false, updatable = false)
     Restaurant restaurant;
 
     @ManyToOne
-    @JoinColumn(name = "cate_id")
+    @JoinColumn(name = "cate_id", insertable = false, updatable = false)
     Category category;
 }

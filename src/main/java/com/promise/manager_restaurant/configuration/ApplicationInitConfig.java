@@ -1,7 +1,11 @@
 package com.promise.manager_restaurant.configuration;
 
 import com.promise.manager_restaurant.entity.User;
+import com.promise.manager_restaurant.entity.UserRole;
+import com.promise.manager_restaurant.entity.keys.KeyUserRoleId;
+import com.promise.manager_restaurant.repository.RoleRepository;
 import com.promise.manager_restaurant.repository.UserRepository;
+import com.promise.manager_restaurant.repository.UserRoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,19 +28,39 @@ public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
 
     @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository) {
+    ApplicationRunner applicationRunner(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository) {
         return args -> {
             if (userRepository.findByEmail("admin@quyet.com").isEmpty()) {
-                // get role
+                // Lấy đối tượng Role
+                var adminRole = roleRepository.getRolesByRoleName("ADMIN");
+                if (adminRole == null) {
+                    throw new RuntimeException("Role ADMIN not exist");
+                }
+
+                // Tạo User
                 User user = User.builder()
                         .email("admin@quyet.com")
-                        // .roles(roles)
                         .password(passwordEncoder.encode("admin"))
                         .build();
-
                 userRepository.save(user);
-                log.warn("admin user has been created with default with email : admin@quyet.com and password: admin, please change it");
+
+                // Lấy lại User vừa tạo
+                var savedUser = userRepository.getUserByEmail("admin@quyet.com");
+
+
+                // Tạo UserRole
+                KeyUserRoleId keyUserRoleId = new KeyUserRoleId(savedUser.getUserId(), adminRole.getRoleName());
+
+                UserRole userRole = UserRole.builder()
+                        .keyUserRoleId(keyUserRoleId)
+                        .role(adminRole)
+                        .user(savedUser)
+                        .build();
+                userRoleRepository.save(userRole);
+
+                log.warn("Admin user has been created with email: admin@quyet.com and password: admin. Please change it.");
             }
         };
     }
+
 }
