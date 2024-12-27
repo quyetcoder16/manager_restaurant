@@ -24,6 +24,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        System.out.println("----------------------JwtAuthenticationEntryPoint");
         // Lấy mã lỗi tùy chỉnh cho trường hợp xác thực thất bại.
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 

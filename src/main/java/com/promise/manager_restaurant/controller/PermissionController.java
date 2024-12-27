@@ -7,23 +7,29 @@ import com.promise.manager_restaurant.service.PermissionService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/permission")
+@RequestMapping("/permissions")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionController {
 
     PermissionService permissionService;
 
-    @PostMapping("/add_permission")
-    ApiResponse<PermissionResponse> createPermission(@RequestBody  AddPermissionRequest request) {
+    @PostMapping
+    ApiResponse<PermissionResponse> createPermission(@RequestBody AddPermissionRequest request) {
         return ApiResponse.<PermissionResponse>builder()
                 .data(permissionService.addPermission(request))
+                .build();
+    }
+
+    @GetMapping
+    ApiResponse<List<PermissionResponse>> getPermissions() {
+        return ApiResponse.<List<PermissionResponse>>builder()
+                .data(permissionService.getAllPermissions())
                 .build();
     }
 

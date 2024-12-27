@@ -123,8 +123,8 @@ public class GlobalExceptionHandler {
         return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
     }
 
-    @ExceptionHandler(value = AuthenticationServiceException.class)
-    ResponseEntity<ApiResponse> handlingAuthenticationServiceException(AuthenticationServiceException exception) {
+    @ExceptionHandler(value = JwtException.class)
+    ResponseEntity<ApiResponse> handlingAuthenticationServiceException(JwtException exception) {
         System.out.println("122223-----");
         // Lấy thông báo lỗi mặc định từ FieldError
         String enumKey = exception.getMessage();
