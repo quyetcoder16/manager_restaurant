@@ -25,7 +25,7 @@ public class ApplicationInitConfig {
 
     @Autowired
     @Lazy
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository) {

@@ -1,11 +1,13 @@
-package com.promise.manager_restaurant.dto.response.permission;
-
+package com.promise.manager_restaurant.dto.response.role;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.promise.manager_restaurant.dto.response.permission.PermissionResponse;
+import com.promise.manager_restaurant.dto.response.rolepermission.RolePermissionResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,11 +15,13 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+public class RoleResponse {
 
-public class PermissionResponse {
-    String permissionName;
+    String roleName;
 
     String description;
+
+    List<PermissionResponse> permissionResponses;
 
     private LocalDateTime createdAt;
 

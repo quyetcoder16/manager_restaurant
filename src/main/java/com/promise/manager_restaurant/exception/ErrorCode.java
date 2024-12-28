@@ -16,6 +16,11 @@ public enum ErrorCode {
     INVALID_DOB(1008, "your age must be at least {min}", HttpStatus.BAD_REQUEST),
     INVALID_TOKEN(1009, "Invalid token!", HttpStatus.UNAUTHORIZED),
     PERMISSION_EXISTED(10010, "Permission already existed!", HttpStatus.BAD_REQUEST),
+    PERMISSION_NOT_EXISTED(10011, "Permission not existed!", HttpStatus.BAD_REQUEST),
+    ROLE_EXISTED(10012, "Role already existed!", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(10013, "Role not existed!", HttpStatus.BAD_REQUEST),
+    ROLE_PERMISSON_EXISTED(10014, "Role-permission already existed!", HttpStatus.BAD_REQUEST),
+    ROLE_PERMISSION_NOT_EXISTED(10015, "Role-permission not existed!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;

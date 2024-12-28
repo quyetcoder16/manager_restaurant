@@ -302,7 +302,9 @@ public class AuthServiceImpl implements AuthService {
                 .subject(user.getEmail())
                 .issuer("com.promise.manager_restaurant")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                //.expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                // Thay đổi thời gian hết hạn thành 1 ngày
+                .expirationTime(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("userId", user.getUserId())
                 .claim("scope", buildScope(user))

@@ -30,11 +30,11 @@ public class SecurityConfig {
     private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/register"
-            , "/auth/login",
+            "/auth/register",
+            "/auth/login",
             "/auth/introspect",
             "/auth/logout",
-            "/auth/refresh_token"
+            "/auth/refresh_token",
     };
 
     /**
