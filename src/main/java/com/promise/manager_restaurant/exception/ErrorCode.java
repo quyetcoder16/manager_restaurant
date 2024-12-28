@@ -21,6 +21,9 @@ public enum ErrorCode {
     ROLE_NOT_EXISTED(10013, "Role not existed!", HttpStatus.BAD_REQUEST),
     ROLE_PERMISSON_EXISTED(10014, "Role-permission already existed!", HttpStatus.BAD_REQUEST),
     ROLE_PERMISSION_NOT_EXISTED(10015, "Role-permission not existed!", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(10016, "Email already existed!", HttpStatus.BAD_REQUEST),
+    PHONE_EXISTED(10017, "Phone already existed!", HttpStatus.BAD_REQUEST),
+    WRONG_PASSWORD(10018, "Wrong password!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;

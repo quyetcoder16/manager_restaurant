@@ -34,6 +34,9 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = false)
     String password;
 
+    @Column(name = "avatar")
+    String avatar;
+
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT true")
     Boolean isActive = true;

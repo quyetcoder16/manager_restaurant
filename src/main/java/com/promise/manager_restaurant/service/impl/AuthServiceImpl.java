@@ -13,11 +13,14 @@ import com.promise.manager_restaurant.dto.response.auth.AuthenticationResponse;
 import com.promise.manager_restaurant.dto.response.auth.IntrospectResponse;
 import com.promise.manager_restaurant.dto.response.auth.RegisterResponse;
 import com.promise.manager_restaurant.entity.*;
+import com.promise.manager_restaurant.entity.keys.KeyUserRoleId;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.exception.ErrorCode;
 import com.promise.manager_restaurant.mapper.UserMapper;
 import com.promise.manager_restaurant.repository.InvalidatedTokenRepository;
+import com.promise.manager_restaurant.repository.RoleRepository;
 import com.promise.manager_restaurant.repository.UserRepository;
+import com.promise.manager_restaurant.repository.UserRoleRepository;
 import com.promise.manager_restaurant.service.AuthService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,8 @@ public class AuthServiceImpl implements AuthService {
     UserRepository userRepository;
     UserMapper userMapper;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    RoleRepository roleRepository;
+    UserRoleRepository userRoleRepository;
 
     // Các giá trị được cấu hình từ tệp cấu hình ứng dụng
     @NonFinal
@@ -77,17 +82,36 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponse register(RegisterRequest registerRequest) {
         // Kiểm tra xem email đã tồn tại chưa
         if (userRepository.existsUserByEmail(registerRequest.getEmail())) {
-            throw new AppException(ErrorCode.USER_EXISTED); // Ném lỗi nếu email đã tồn tại
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
+
+        if (userRepository.existsUserByPhone(registerRequest.getPhone())) {
+            throw new AppException(ErrorCode.PHONE_EXISTED);
+        }
+
+        Role role = roleRepository.findRoleByRoleName("USER")
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 
         // Chuyển đổi từ DTO sang entity và mã hóa mật khẩu
         User user = userMapper.toUser(registerRequest);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         user.setIsActive(true);
+        User savedUser = userRepository.save(user);
+git
+        KeyUserRoleId keyUserRoleId = new KeyUserRoleId();
+        keyUserRoleId.setRoleName(role.getRoleName());
+        keyUserRoleId.setUserId(savedUser.getUserId());
+
+        UserRole userRole = UserRole.builder()
+                .keyUserRoleId(keyUserRoleId)
+                .build();
+
+        userRoleRepository.save(userRole);
 
         // Lưu người dùng mới vào cơ sở dữ liệu
-        return userMapper.toRegisterResponse(userRepository.save(user));
+        return userMapper.toRegisterResponse(savedUser);
     }
 
     /**
@@ -299,14 +323,12 @@ public class AuthServiceImpl implements AuthService {
     private String generateAccessToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getEmail())
+                .subject(user.getUserId())
                 .issuer("com.promise.manager_restaurant")
                 .issueTime(new Date())
-                //.expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
-                // Thay đổi thời gian hết hạn thành 1 ngày
-                .expirationTime(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
+                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
-                .claim("userId", user.getUserId())
+                .claim("email", user.getEmail())
                 .claim("scope", buildScope(user))
                 .build();
 
@@ -329,7 +351,7 @@ public class AuthServiceImpl implements AuthService {
     private String generateRefreshToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getEmail())
+                .subject(user.getUserId())
                 .issuer("com.promise.manager_restaurant")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli()))

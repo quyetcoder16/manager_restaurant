@@ -30,11 +30,7 @@ public class SecurityConfig {
     private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/auth/register",
-            "/auth/login",
-            "/auth/introspect",
-            "/auth/logout",
-            "/auth/refresh_token",
+            "/auth/**",
     };
 
     /**
@@ -46,10 +42,12 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+
+
         httpSecurity
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll() // Cho phép truy cập các endpoint công khai với POST.
-                                // .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name()) // Chỉ admin được phép GET /users.
+                                .requestMatchers(HttpMethod.GET, "/users/file/**", "/menu/file/**").permitAll()
                                 .anyRequest().authenticated() // Yêu cầu xác thực cho các endpoint khác.
                 )
                 .oauth2ResourceServer(oauth2 ->

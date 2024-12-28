@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.dto.response.user;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,7 +10,8 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class    UserResponse {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class UserResponse {
     String userId;
 
     String firstName;
@@ -19,4 +21,7 @@ public class    UserResponse {
     String email;
 
     String phone;
+
+    String avatar;
+
 }

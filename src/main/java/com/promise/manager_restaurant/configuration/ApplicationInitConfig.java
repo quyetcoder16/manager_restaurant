@@ -41,6 +41,7 @@ public class ApplicationInitConfig {
                 User user = User.builder()
                         .email("admin@quyet.com")
                         .password(passwordEncoder.encode("admin"))
+                        .isActive(true)
                         .build();
                 userRepository.save(user);
 
