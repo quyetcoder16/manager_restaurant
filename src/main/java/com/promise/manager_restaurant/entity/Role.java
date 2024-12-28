@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +26,7 @@ public class Role extends BaseEntity {
     List<UserRole> listUserRole;
 
     @OneToMany(mappedBy = "role")
+    @ToString.Exclude //// Bỏ qua để tránh vòng lặp
     List<RolePermission> listRolePermission;
 
 

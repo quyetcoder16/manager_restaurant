@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
+public class    UserResponse {
     String userId;
 
     String firstName;
