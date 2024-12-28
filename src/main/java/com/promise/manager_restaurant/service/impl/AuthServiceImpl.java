@@ -99,7 +99,6 @@ public class AuthServiceImpl implements AuthService {
 
         user.setIsActive(true);
         User savedUser = userRepository.save(user);
-git
         KeyUserRoleId keyUserRoleId = new KeyUserRoleId();
         keyUserRoleId.setRoleName(role.getRoleName());
         keyUserRoleId.setUserId(savedUser.getUserId());
