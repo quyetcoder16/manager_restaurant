@@ -1,4 +1,4 @@
-package com.promise.manager_restaurant.dto.request.user;
+package com.promise.manager_restaurant.dto.request.user_management;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -20,6 +20,8 @@ public class UserCreationRequest {
     String email;
 
     String phone;
+
+    String roleName;
 
     @Size(min = 7, message = "INVALID_PASSWORD")
     String password;

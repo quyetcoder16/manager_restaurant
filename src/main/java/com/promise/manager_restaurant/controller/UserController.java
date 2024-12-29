@@ -1,7 +1,6 @@
 package com.promise.manager_restaurant.controller;
 
 import com.promise.manager_restaurant.dto.request.user.ChangePasswordUserRequest;
-import com.promise.manager_restaurant.dto.request.user.UserCreationRequest;
 import com.promise.manager_restaurant.dto.request.user.UserUpdateRequest;
 import com.promise.manager_restaurant.dto.response.ApiResponse;
 import com.promise.manager_restaurant.dto.response.user.UserResponse;

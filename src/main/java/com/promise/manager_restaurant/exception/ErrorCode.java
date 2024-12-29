@@ -24,6 +24,7 @@ public enum ErrorCode {
     EMAIL_EXISTED(10016, "Email already existed!", HttpStatus.BAD_REQUEST),
     PHONE_EXISTED(10017, "Phone already existed!", HttpStatus.BAD_REQUEST),
     WRONG_PASSWORD(10018, "Wrong password!", HttpStatus.BAD_REQUEST),
+    USER_DONT_HAVE_ROLE(10019, "User don't have role!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;
