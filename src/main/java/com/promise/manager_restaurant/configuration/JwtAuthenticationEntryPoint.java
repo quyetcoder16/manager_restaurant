@@ -26,40 +26,41 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        System.out.println("----------------------JwtAuthenticationEntryPoint: " + authException.getMessage());
-
-        log.error("Authentication failed: {}", authException.getMessage());
-
-        // Xác định mã lỗi cụ thể dựa trên thông điệp ngoại lệ
-        ErrorCode errorCode;
-        Throwable rootCause = authException.getCause(); // Lấy nguyên nhân gốc (nếu có)
-
-        if (rootCause instanceof org.springframework.security.authentication.AuthenticationServiceException &&
-                rootCause.getMessage().contains("UNAUTHENTICATED")) {
-            errorCode = ErrorCode.UNAUTHENTICATED; // Lỗi xác thực
-        } else if (authException.getMessage().contains("INVALID_TOKEN")) {
-            errorCode = ErrorCode.INVALID_TOKEN; // Token không hợp lệ
-        } else if (authException.getMessage().contains("USER_LOCKED")) {
-            errorCode = ErrorCode.USER_LOCKED; // Người dùng bị khóa
-        } else {
-            errorCode = ErrorCode.UNAUTHORIZED; // Mặc định nếu không khớp
+        // In thông tin gốc của lỗi
+        Throwable rootCause = authException;
+        while (rootCause.getCause() != null) {
+            rootCause = rootCause.getCause(); // Tìm nguyên nhân gốc
         }
 
-        // Thiết lập phản hồi HTTP
+        // Log thông tin nguyên nhân gốc
+        log.error("Authentication failed: {}", authException.getMessage());
+        log.error("Root cause: {}", rootCause.getMessage(), rootCause);
+
+        // Kiểm tra và xử lý mã lỗi
+        ErrorCode errorCode;
+        if (rootCause instanceof org.springframework.security.oauth2.jwt.JwtException &&
+                rootCause.getMessage().contains("USER_LOCKED")) {
+            errorCode = ErrorCode.USER_LOCKED; // Người dùng bị khóa
+        } else if (authException.getMessage().contains("INVALID_TOKEN")) {
+            errorCode = ErrorCode.INVALID_TOKEN; // Token không hợp lệ
+        } else {
+            errorCode = ErrorCode.UNAUTHORIZED; // Mặc định
+        }
+
+        // Gửi phản hồi
         response.setStatus(errorCode.getHttpStatus().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        // Tạo đối tượng phản hồi API chứa thông tin lỗi
         ApiResponse<?> apiResponse = ApiResponse.builder()
-                .code(errorCode.getErrorCode()) // Mã lỗi từ ErrorCode
-                .data(errorCode.getErrorMsg()) // Thông báo lỗi từ ErrorCode
+                .code(errorCode.getErrorCode())
+                .data(errorCode.getErrorMsg())
                 .build();
 
-        // Chuyển đổi đối tượng phản hồi thành JSON và gửi về client
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         response.flushBuffer();
     }
+
 
 
 }
