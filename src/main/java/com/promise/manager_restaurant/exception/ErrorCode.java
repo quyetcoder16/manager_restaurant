@@ -26,6 +26,9 @@ public enum ErrorCode {
     WRONG_PASSWORD(10018, "Wrong password!", HttpStatus.BAD_REQUEST),
     USER_DONT_HAVE_ROLE(10019, "User don't have role!", HttpStatus.BAD_REQUEST),
     USER_LOCKED(10020, "User is locked!", HttpStatus.UNAUTHORIZED),
+    //Category
+    CATEGORY_EXISTED(10021, "Category already existed!", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_EXISTED(10022, "Category not existed!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;
