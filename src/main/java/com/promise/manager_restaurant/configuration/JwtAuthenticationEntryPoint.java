@@ -6,6 +6,7 @@ import com.promise.manager_restaurant.exception.ErrorCode;
 import jakarta.servlet.ServletException; // Ngoại lệ của Java Servlet API.
 import jakarta.servlet.http.HttpServletRequest; // Đối tượng đại diện cho yêu cầu HTTP.
 import jakarta.servlet.http.HttpServletResponse; // Đối tượng đại diện cho phản hồi HTTP.
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType; // Định nghĩa các kiểu media như JSON, XML.
 import org.springframework.security.core.AuthenticationException; // Ngoại lệ khi xác thực thất bại.
 import org.springframework.security.web.AuthenticationEntryPoint; // Giao diện xử lý xác thực thất bại.
@@ -13,6 +14,7 @@ import org.springframework.security.web.AuthenticationEntryPoint; // Giao diện
 
 import java.io.IOException; // Ngoại lệ xử lý I/O.
 
+@Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     /**
@@ -24,29 +26,40 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        System.out.println("----------------------JwtAuthenticationEntryPoint");
-        // Lấy mã lỗi tùy chỉnh cho trường hợp xác thực thất bại.
-        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+        System.out.println("----------------------JwtAuthenticationEntryPoint: " + authException.getMessage());
 
-        // Thiết lập mã trạng thái HTTP cho phản hồi.
+        log.error("Authentication failed: {}", authException.getMessage());
+
+        // Xác định mã lỗi cụ thể dựa trên thông điệp ngoại lệ
+        ErrorCode errorCode;
+        Throwable rootCause = authException.getCause(); // Lấy nguyên nhân gốc (nếu có)
+
+        if (rootCause instanceof org.springframework.security.authentication.AuthenticationServiceException &&
+                rootCause.getMessage().contains("UNAUTHENTICATED")) {
+            errorCode = ErrorCode.UNAUTHENTICATED; // Lỗi xác thực
+        } else if (authException.getMessage().contains("INVALID_TOKEN")) {
+            errorCode = ErrorCode.INVALID_TOKEN; // Token không hợp lệ
+        } else if (authException.getMessage().contains("USER_LOCKED")) {
+            errorCode = ErrorCode.USER_LOCKED; // Người dùng bị khóa
+        } else {
+            errorCode = ErrorCode.UNAUTHORIZED; // Mặc định nếu không khớp
+        }
+
+        // Thiết lập phản hồi HTTP
         response.setStatus(errorCode.getHttpStatus().value());
-
-        // Thiết lập kiểu nội dung của phản hồi là JSON.
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        // Tạo một đối tượng phản hồi API chứa thông tin lỗi.
+        // Tạo đối tượng phản hồi API chứa thông tin lỗi
         ApiResponse<?> apiResponse = ApiResponse.builder()
-                .code(errorCode.getErrorCode()) // Mã lỗi.
-                .data(errorCode.getErrorMsg()) // Thông báo lỗi.
+                .code(errorCode.getErrorCode()) // Mã lỗi từ ErrorCode
+                .data(errorCode.getErrorMsg()) // Thông báo lỗi từ ErrorCode
                 .build();
 
-        // Sử dụng ObjectMapper để chuyển đối tượng phản hồi API thành chuỗi JSON.
+        // Chuyển đổi đối tượng phản hồi thành JSON và gửi về client
         ObjectMapper objectMapper = new ObjectMapper();
-
-        // Ghi chuỗi JSON vào phản hồi HTTP.
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
-
-        // Đẩy dữ liệu phản hồi đến client.
         response.flushBuffer();
     }
+
+
 }

@@ -126,6 +126,10 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.USER_NOT_EXISTED); // Ném lỗi nếu không tìm thấy
         });
 
+        if (!user.getIsActive()) {
+            throw new AppException(ErrorCode.USER_LOCKED);
+        }
+
         // Xác thực mật khẩu
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
@@ -156,11 +160,17 @@ public class AuthServiceImpl implements AuthService {
         var token = introspectRequest.getAccessToken();
         boolean isValid = true;
 
-        try {
-            verifyToken(token, false); // Kiểm tra token
-        } catch (AppException e) {
-            isValid = false; // Token không hợp lệ
+
+        SignedJWT jwt = verifyToken(token, false); // Kiểm tra token
+        String userId = jwt.getJWTClaimsSet().getSubject();
+
+        User user = userRepository.findByUserId(userId).orElseThrow(() ->
+                new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (!user.getIsActive()) {
+            throw new AppException(ErrorCode.USER_LOCKED);
         }
+
 
         return IntrospectResponse.builder()
                 .valid(isValid)
@@ -188,12 +198,16 @@ public class AuthServiceImpl implements AuthService {
             invalidatedTokenRepository.save(invalidatedToken);
         }
 
-        var email = signedJWT.getJWTClaimsSet().getSubject();
+        var userId = signedJWT.getJWTClaimsSet().getSubject();
 
-        // Tìm người dùng theo email
-        var user = userRepository.findByEmail(email).orElseThrow(
+        // Tìm người dùng theo user Id
+        var user = userRepository.findByUserId(userId).orElseThrow(
                 () -> new AppException(ErrorCode.UNAUTHENTICATED)
         );
+
+        if (!user.getIsActive()) {
+            throw new AppException(ErrorCode.USER_LOCKED);
+        }
 
         // Tạo Access Token và Refresh Token mới
         var accessToken = generateAccessToken(user);

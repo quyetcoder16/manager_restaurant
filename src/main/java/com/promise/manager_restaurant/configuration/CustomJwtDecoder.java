@@ -3,6 +3,7 @@ package com.promise.manager_restaurant.configuration;
 
 import com.nimbusds.jose.JOSEException;
 import com.promise.manager_restaurant.dto.request.auth.IntrospectRequest;
+import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,16 +48,16 @@ public class CustomJwtDecoder implements JwtDecoder {
         // Bước 1: Kiểm tra token với máy chủ xác thực từ xa
         try {
             var response = authService.introspect(IntrospectRequest.builder()
-                    .accessToken(token) // Gửi token đến endpoint introspect để kiểm tra tính hợp lệ
+                    .accessToken(token)
                     .build());
 
-
-            // Nếu máy chủ trả về không hợp lệ, ném ngoại lệ JwtException
-            if (!response.isValid())
-                throw new JwtException("INVALID_TOKEN");
+            if (!response.isValid()) {
+                throw new JwtException("INVALID_TOKEN"); // Ném lỗi cụ thể
+            }
+        } catch (AppException appException) {
+            throw new JwtException(appException.getErrorCode().name());
         } catch (JOSEException | ParseException e) {
-            // Xử lý các lỗi liên quan đến JWT hoặc parse dữ liệu
-            throw new JwtException(e.getMessage());
+            throw new JwtException("TOKEN_VERIFICATION_FAILED");
         }
 
         // Bước 2: Khởi tạo NimbusJwtDecoder nếu chưa được khởi tạo
