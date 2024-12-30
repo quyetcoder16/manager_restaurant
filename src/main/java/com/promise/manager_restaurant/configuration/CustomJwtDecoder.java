@@ -5,6 +5,7 @@ import com.nimbusds.jose.JOSEException;
 import com.promise.manager_restaurant.dto.request.auth.IntrospectRequest;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.service.AuthService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -23,6 +24,7 @@ import java.util.Objects;
  * Nó được cài đặt giao diện JwtDecoder của Spring Security.
  */
 @Component
+@Slf4j
 public class CustomJwtDecoder implements JwtDecoder {
 
     // Key dùng để ký JWT, được cấu hình trong tệp `application.properties`.
@@ -55,6 +57,7 @@ public class CustomJwtDecoder implements JwtDecoder {
                 throw new JwtException("INVALID_TOKEN"); // Ném lỗi cụ thể
             }
         } catch (AppException appException) {
+            log.error(appException.getErrorCode().name());
             throw new JwtException(appException.getErrorCode().name());
         } catch (JOSEException | ParseException e) {
             throw new JwtException("TOKEN_VERIFICATION_FAILED");
