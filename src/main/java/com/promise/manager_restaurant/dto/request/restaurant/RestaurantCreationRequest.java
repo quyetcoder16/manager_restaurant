@@ -23,7 +23,7 @@ public class RestaurantCreationRequest {
 
     String description;
 
-    String logo;
+    MultipartFile logo;
 
     String address;
 
