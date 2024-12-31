@@ -32,6 +32,7 @@ public interface RestaurantMapper {
     @Mapping(target = "listOrder", ignore = true)
     @Mapping(target = "resID", ignore = true)
     @Mapping(target = "background", ignore = true)
+    @Mapping(target = "logo", ignore = true)
     @Mapping(target = "isFreeship", source = "isFreeship", qualifiedByName = "mapStringToBoolean")
     Restaurant tRestaurant(RestaurantCreationRequest request);
 
@@ -44,6 +45,7 @@ public interface RestaurantMapper {
     @Mapping(target = "listOrder", ignore = true)
     @Mapping(target = "resID", ignore = true)
     @Mapping(target = "background", ignore = true)
+    @Mapping(target = "logo", ignore = true)
     @Mapping(target = "isFreeship", source = "isFreeship", qualifiedByName = "mapStringToBoolean")
     Restaurant tRestaurant(RestaurantUpdateRequest request);
 

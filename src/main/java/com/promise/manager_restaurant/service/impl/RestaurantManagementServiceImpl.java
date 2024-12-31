@@ -112,6 +112,11 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
             restaurant.setBackground(background);
         }
 
+        if (request.getLogo() != null) {
+            String logo = filesStorageService.saveFile(request.getLogo());
+            restaurant.setLogo(logo);
+        }
+
         return restaurantMapper.tRestaurantResponse(restaurantRepository.save(restaurant));
     }
 
@@ -153,10 +158,6 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
             existingRestaurant.setDescription(request.getDescription());
         }
 
-        if (request.getLogo() != null) {
-            existingRestaurant.setLogo(request.getLogo());
-        }
-
         if (request.getAddress() != null) {
             existingRestaurant.setAddress(request.getAddress());
         }
@@ -173,6 +174,11 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         if (request.getBackground() != null) {
             String background = filesStorageService.saveFile(request.getBackground());
             existingRestaurant.setBackground(background);
+        }
+
+        if (request.getLogo() != null) {
+            String logo = filesStorageService.saveFile(request.getLogo());
+            existingRestaurant.setLogo(logo);
         }
 
         if (request.getPhone() != null) {

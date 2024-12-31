@@ -18,7 +18,7 @@ public class RestaurantUpdateRequest {
 
     String description;
 
-    String logo;
+    MultipartFile logo;
 
     String address;
 
