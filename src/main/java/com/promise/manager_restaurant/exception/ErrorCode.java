@@ -29,6 +29,21 @@ public enum ErrorCode {
     //Category
     CATEGORY_EXISTED(10021, "Category already existed!", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(10022, "Category not existed!", HttpStatus.BAD_REQUEST),
+    //Restaurant
+    RESTAURANT_EXISTED(10023, "Restaurant already existed!", HttpStatus.BAD_REQUEST),
+    RESTAURANT_NOT_EXISTED(10024, "Restaurant not existed!", HttpStatus.BAD_REQUEST),
+    TITLE_EXISTED(10025, "Title already existed!", HttpStatus.BAD_REQUEST),
+    //Gallery
+    GALLERY_EXISTED(10026, "Gallery already existed!", HttpStatus.BAD_REQUEST),
+    GALLERY_NOT_EXISTED(10027, "Gallery not existed!", HttpStatus.BAD_REQUEST),
+    GALLERY_NOT_BELONG_RESTAURANT(10028, "Gallery not belong to restaurant!", HttpStatus.BAD_REQUEST),
+    CATEGORY_EXISTED_IN_RESTAURANT(10029, "Category existed in restaurant!", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_EXISTED_IN_RESTAURANT(10030, "Category not existed in restaurant!", HttpStatus.BAD_REQUEST),
+    FOOD_EXISTED(10031, "Food already existed!", HttpStatus.BAD_REQUEST),
+    FOOD_NOT_EXISTED(10032, "Food not existed!", HttpStatus.BAD_REQUEST),
+    FOOD_NOT_IN_RESTAURANT(10033, "Food not in restaurant!", HttpStatus.BAD_REQUEST),
+    //
+    INVALID_PRICE(10033, "Invalid price!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;

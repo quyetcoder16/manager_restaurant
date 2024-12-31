@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -151,4 +152,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(apiResponse);
     }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<String> handleDateTimeParseException(DateTimeParseException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Định dạng ngày không hợp lệ: " + ex.getParsedString());
+    }
+
+
 }
