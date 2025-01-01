@@ -24,4 +24,6 @@ public class UpadateFoodRequest {
 
     @DecimalMin(value = "0.0001", message = "INVALID_PRICE")
     Double price;
+
+    String categoryId;
 }

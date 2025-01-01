@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.dto.response.food;
 
+import com.promise.manager_restaurant.dto.response.category.CategoryResponse;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,4 +23,6 @@ public class FoodResponse {
     String timeShip;
 
     double price;
+
+    CategoryResponse category;
 }
