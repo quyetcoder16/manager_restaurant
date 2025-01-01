@@ -14,6 +14,7 @@ import com.promise.manager_restaurant.dto.response.food.FoodResponse;
 import com.promise.manager_restaurant.dto.response.gallery.GalleryResponse;
 import com.promise.manager_restaurant.dto.response.restaurant.RestaurantResponse;
 import com.promise.manager_restaurant.entity.*;
+import com.promise.manager_restaurant.entity.keys.KeyFoodCategory;
 import com.promise.manager_restaurant.entity.keys.KeyRestaurantCategory;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.exception.ErrorCode;
@@ -53,6 +54,8 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
     RestaurantCategoryRepository restaurantCategoryRepository;
 
     FoodRepository foodRepository;
+
+    FoodCategoryRepository foodCategoryRepository;
 
     FilesStorageService filesStorageService;
 
@@ -144,8 +147,10 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         }
 
         if (request.getTitle() != null) {
-            if (restaurantRepository.existsRestaurantByTitle(request.getTitle())) {
-                throw new AppException(ErrorCode.TITLE_EXISTED);
+            if (!existingRestaurant.getTitle().equals(request.getTitle())) {
+                if (restaurantRepository.existsRestaurantByTitle(request.getTitle())) {
+                    throw new AppException(ErrorCode.TITLE_EXISTED);
+                }
             }
             existingRestaurant.setTitle(request.getTitle());
         }
@@ -182,15 +187,19 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         }
 
         if (request.getPhone() != null) {
-            if (restaurantRepository.existsRestaurantByPhone(request.getPhone())) {
-                throw new AppException(ErrorCode.PHONE_EXISTED);
+            if (!existingRestaurant.getPhone().equals(request.getPhone())) {
+                if (restaurantRepository.existsRestaurantByPhone(request.getPhone())) {
+                    throw new AppException(ErrorCode.PHONE_EXISTED);
+                }
+                existingRestaurant.setPhone(request.getPhone());
             }
-            existingRestaurant.setPhone(request.getPhone());
         }
 
         if (request.getEmail() != null) {
-            if (restaurantRepository.existsRestaurantByEmail(request.getEmail())) {
-                throw new AppException(ErrorCode.EMAIL_EXISTED);
+            if (!existingRestaurant.getEmail().equals(request.getEmail())) {
+                if (restaurantRepository.existsRestaurantByEmail(request.getEmail())) {
+                    throw new AppException(ErrorCode.EMAIL_EXISTED);
+                }
             }
             existingRestaurant.setEmail(request.getEmail());
         }
@@ -412,7 +421,15 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         }
 
         List<FoodResponse> foodResponses = new ArrayList<>();
-        existingRestaurant.getListFood().forEach(food -> foodResponses.add(foodMapper.toFoodResponse(food)));
+        existingRestaurant.getListFood().forEach(food -> {
+            FoodResponse foodResponse = foodMapper.toFoodResponse(food);
+            Category category = food.getListFoodCategory().get(0).getCategory();
+            CategoryResponse categoryResponse = CategoryResponse.builder()
+                    .nameCategory(category.getNameCategory())
+                    .build();
+            foodResponse.setCategory(categoryResponse);
+            foodResponses.add(foodResponse);
+        });
         return foodResponses;
     }
 
@@ -454,12 +471,14 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
     }
 
 
-
     @Override
     @PreAuthorize("hasAnyAuthority('UPDATE_ALL_RESTAURANT', 'UPDATE_YOUR_RESTAURANT')")
     public void addFoodToRestaurant(AddFoodRequest request, String resId) {
         Restaurant existingRestaurant = restaurantRepository.findById(resId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESTAURANT_NOT_EXISTED));
+
+        Category existingCategory = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -483,8 +502,23 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
             String image = filesStorageService.saveFile(request.getImage());
             food.setImage(image);
         }
+
         food.setRestaurant(existingRestaurant);
-        foodRepository.save(food);
+        Food existingFood = foodRepository.save(food);
+
+        KeyFoodCategory keyFoodCategory = new KeyFoodCategory();
+        keyFoodCategory.setCategoryId(existingCategory.getCateID());
+        keyFoodCategory.setFoodId(existingFood.getFoodId());
+
+        if (foodCategoryRepository.existsById(keyFoodCategory)) {
+            throw new AppException(ErrorCode.FOOD_IN_CATEGORY);
+        }
+
+        FoodCategory foodCategory = FoodCategory.builder()
+                .keyFoodCategory(keyFoodCategory)
+                .build();
+
+        foodCategoryRepository.save(foodCategory);
 
         existingRestaurant.getListFood().add(food);
         restaurantRepository.save(existingRestaurant);
@@ -517,7 +551,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         Food existingFood = foodRepository.findById(request.getFoodId())
                 .orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTED));
 
-        if (existingRestaurant.getListFood().contains(existingFood)) {
+        if (!existingRestaurant.getListFood().contains(existingFood)) {
             throw new AppException(ErrorCode.FOOD_NOT_IN_RESTAURANT);
         }
 
@@ -540,6 +574,32 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         if (request.getImage() != null) {
             String image = filesStorageService.saveFile(request.getImage());
             existingFood.setImage(image);
+        }
+
+        if (request.getCategoryId() != null) {
+            Category existingCategory = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+
+            FoodCategory existingFoodCategory = existingFood.getListFoodCategory().get(0);
+            if (existingFoodCategory != null){
+                foodCategoryRepository.delete(existingFoodCategory);
+                existingFood.getListFoodCategory().remove(existingFoodCategory);
+            }
+
+            KeyFoodCategory keyFoodCategory = new KeyFoodCategory();
+            keyFoodCategory.setCategoryId(existingCategory.getCateID());
+            keyFoodCategory.setFoodId(existingFood.getFoodId());
+
+            if (foodCategoryRepository.existsById(keyFoodCategory)) {
+                throw new AppException(ErrorCode.FOOD_IN_CATEGORY);
+            }
+
+            FoodCategory foodCategory = FoodCategory.builder()
+                    .keyFoodCategory(keyFoodCategory)
+                    .build();
+
+            foodCategoryRepository.save(foodCategory);
+            existingFood.getListFoodCategory().add(foodCategory);
         }
 
         foodRepository.save(existingFood);
@@ -571,9 +631,10 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
         Food existingFood = foodRepository.findById(request.getFoodId())
                 .orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTED));
 
-        if (existingRestaurant.getListFood().contains(existingFood)) {
+        if (!existingRestaurant.getListFood().contains(existingFood)) {
             throw new AppException(ErrorCode.FOOD_NOT_IN_RESTAURANT);
         }
+
         foodRepository.delete(existingFood);
     }
 }

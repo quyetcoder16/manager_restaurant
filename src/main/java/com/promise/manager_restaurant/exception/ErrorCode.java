@@ -42,6 +42,7 @@ public enum ErrorCode {
     FOOD_EXISTED(10031, "Food already existed!", HttpStatus.BAD_REQUEST),
     FOOD_NOT_EXISTED(10032, "Food not existed!", HttpStatus.BAD_REQUEST),
     FOOD_NOT_IN_RESTAURANT(10033, "Food not in restaurant!", HttpStatus.BAD_REQUEST),
+    FOOD_IN_CATEGORY(10034, "Food already existed!", HttpStatus.BAD_REQUEST),
     //
     INVALID_PRICE(10033, "Invalid price!", HttpStatus.BAD_REQUEST),
     NOT_VERIFY_EMAIL(10034, "Not verify email!", HttpStatus.FORBIDDEN),
