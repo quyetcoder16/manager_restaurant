@@ -57,6 +57,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         User user = userMapper.toUsers(userCreationRequest);
         user.setIsActive(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setIsVerifyEmail(true);
 
         User savedUser = userRepository.save(user);
 
@@ -75,7 +76,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public UserManagementResponse   updateUser(UserUpdateManagementRequest userUpdateRequest) {
+    public UserManagementResponse updateUser(UserUpdateManagementRequest userUpdateRequest) {
 
         User existingUser = userRepository.findByUserId(userUpdateRequest.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));

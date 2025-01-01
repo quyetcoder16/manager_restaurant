@@ -37,6 +37,8 @@ public class User extends BaseEntity {
     @Column(name = "avatar")
     String avatar;
 
+    @Column(name = "is_verify_email")
+    Boolean isVerifyEmail = false;
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT true")
     Boolean isActive = true;

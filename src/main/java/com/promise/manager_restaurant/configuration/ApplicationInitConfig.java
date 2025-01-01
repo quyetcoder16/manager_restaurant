@@ -42,6 +42,7 @@ public class ApplicationInitConfig {
                         .email("admin@quyet.com")
                         .password(passwordEncoder.encode("admin"))
                         .isActive(true)
+                        .isVerifyEmail(true)
                         .build();
                 userRepository.save(user);
 

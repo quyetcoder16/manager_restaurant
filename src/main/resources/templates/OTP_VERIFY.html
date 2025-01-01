@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email OTP</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            background: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .email-body {
+            padding: 20px;
+        }
+
+        .email-body p {
+            margin: 0 0 16px;
+            line-height: 1.6;
+        }
+
+        .email-body .otp {
+            display: inline-block;
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            padding: 10px 20px;
+            background: #f1f8ff;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+
+        .email-footer {
+            background: #f9f9f9;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #777;
+            border-top: 1px solid #ddd;
+        }
+
+        .email-footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1>Xác Nhận Email</h1>
+    </div>
+    <div class="email-body">
+        <p>Xin chào <span th:text="${firstName}"></span> <span th:text="${lastName}"></span>,</p>
+        <p>Chúng tôi đã nhận được yêu cầu đăng ký tài khoản với email của bạn.</p>
+        <p>Vui lòng sử dụng mã OTP bên dưới để xác nhận tài khoản của bạn:</p>
+        <div class="otp" th:text="${otp}"></div>
+        <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+        <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi!</p>
+    </div>
+    <div class="email-footer">
+        <p>Đây là email tự động, vui lòng không trả lời.</p>
+        <p>Trân trọng,</p>
+        <p>Đội ngũ hỗ trợ team Promise</p>
+    </div>
+</div>
+</body>
+</html>

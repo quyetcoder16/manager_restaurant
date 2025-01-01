@@ -12,16 +12,19 @@ import com.promise.manager_restaurant.dto.request.auth.*;
 import com.promise.manager_restaurant.dto.response.auth.AuthenticationResponse;
 import com.promise.manager_restaurant.dto.response.auth.IntrospectResponse;
 import com.promise.manager_restaurant.dto.response.auth.RegisterResponse;
+import com.promise.manager_restaurant.dto.response.auth.VerifyEmailResponse;
+import com.promise.manager_restaurant.dto.response.email.DataMailDTO;
 import com.promise.manager_restaurant.entity.*;
 import com.promise.manager_restaurant.entity.keys.KeyUserRoleId;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.exception.ErrorCode;
 import com.promise.manager_restaurant.mapper.UserMapper;
-import com.promise.manager_restaurant.repository.InvalidatedTokenRepository;
-import com.promise.manager_restaurant.repository.RoleRepository;
-import com.promise.manager_restaurant.repository.UserRepository;
-import com.promise.manager_restaurant.repository.UserRoleRepository;
+import com.promise.manager_restaurant.repository.*;
 import com.promise.manager_restaurant.service.AuthService;
+import com.promise.manager_restaurant.service.MailService;
+import com.promise.manager_restaurant.utils.Const;
+import com.promise.manager_restaurant.utils.OTPGenerator;
+import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,10 +39,7 @@ import org.springframework.util.CollectionUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 
 @Slf4j
@@ -54,6 +54,8 @@ public class AuthServiceImpl implements AuthService {
     InvalidatedTokenRepository invalidatedTokenRepository;
     RoleRepository roleRepository;
     UserRoleRepository userRoleRepository;
+    MailService mailService;
+    OtpVerificationRepository otpVerificationRepository;
 
     // Các giá trị được cấu hình từ tệp cấu hình ứng dụng
     @NonFinal
@@ -79,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
      * @return Thông tin phản hồi sau khi đăng ký thành công.
      */
     @Override
-    public RegisterResponse register(RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) throws MessagingException {
         // Kiểm tra xem email đã tồn tại chưa
         if (userRepository.existsUserByEmail(registerRequest.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
@@ -98,6 +100,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user.setIsActive(true);
+        user.setIsVerifyEmail(false);
         User savedUser = userRepository.save(user);
         KeyUserRoleId keyUserRoleId = new KeyUserRoleId();
         keyUserRoleId.setRoleName(role.getRoleName());
@@ -108,6 +111,29 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRoleRepository.save(userRole);
+
+        String otp = OTPGenerator.generateOTP();
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("email", user.getEmail());
+        props.put("firstName", user.getFirstName());
+        props.put("lastName", user.getLastName());
+        props.put("otp", otp);
+
+        OtpVerification otpVerification = OtpVerification.builder()
+                .email(user.getEmail())
+                .otp(otp)
+                .isUsed(false)
+                .build();
+        otpVerificationRepository.save(otpVerification);
+
+        DataMailDTO dataMailDTO = DataMailDTO.builder()
+                .to(user.getEmail())
+                .subject(Const.SEND_MAIL_SUBJECT.OTP_VERIFY)
+                .props(props)
+                .build();
+
+        mailService.send(dataMailDTO, Const.TEMPLATE_FILE_NAME.OTP_VERIFY);
 
         // Lưu người dùng mới vào cơ sở dữ liệu
         return userMapper.toRegisterResponse(savedUser);
@@ -126,7 +152,12 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.USER_NOT_EXISTED); // Ném lỗi nếu không tìm thấy
         });
 
-        if (!user.getIsActive()) {
+        if (user.getIsVerifyEmail() == null || !user.getIsVerifyEmail()) {
+            throw new AppException(ErrorCode.NOT_VERIFY_EMAIL);
+        }
+
+
+        if (user.getIsActive() == null || !user.getIsActive()) {
             throw new AppException(ErrorCode.USER_LOCKED);
         }
 
@@ -259,6 +290,37 @@ public class AuthServiceImpl implements AuthService {
         } catch (AppException appException) {
             log.info("Access token already expired");
         }
+    }
+
+    @Override
+    public VerifyEmailResponse verifyEmail(VerifyEmailRequest verifyEmailRequest) {
+        boolean isVerifyEmail = false;
+
+        OtpVerification otpVerification = otpVerificationRepository.findByEmail(verifyEmailRequest.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.EMAIL_NOT_FOND));
+
+        if (otpVerification.getIsUsed()) {
+            throw new AppException(ErrorCode.OTP_IS_USED);
+        }
+
+        if (otpVerification.getOtp().equals(verifyEmailRequest.getOtp())) {
+
+            User user = userRepository.findByEmail(verifyEmailRequest.getEmail()).orElseThrow(
+                    () -> new AppException(ErrorCode.EMAIL_NOT_FOND)
+            );
+
+            user.setIsVerifyEmail(true);
+            userRepository.save(user);
+
+            isVerifyEmail = true;
+            otpVerification.setIsUsed(true);
+            otpVerificationRepository.save(otpVerification);
+        }
+
+
+        return VerifyEmailResponse.builder()
+                .success(isVerifyEmail)
+                .build();
     }
 
     /**

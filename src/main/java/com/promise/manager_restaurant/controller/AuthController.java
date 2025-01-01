@@ -1,14 +1,13 @@
 package com.promise.manager_restaurant.controller;
 
 import com.nimbusds.jose.JOSEException;
-import com.promise.manager_restaurant.dto.request.auth.AuthenticationRequest;
-import com.promise.manager_restaurant.dto.request.auth.LogoutRequest;
-import com.promise.manager_restaurant.dto.request.auth.RefreshRequest;
-import com.promise.manager_restaurant.dto.request.auth.RegisterRequest;
+import com.promise.manager_restaurant.dto.request.auth.*;
 import com.promise.manager_restaurant.dto.response.ApiResponse;
 import com.promise.manager_restaurant.dto.response.auth.AuthenticationResponse;
 import com.promise.manager_restaurant.dto.response.auth.RegisterResponse;
+import com.promise.manager_restaurant.dto.response.auth.VerifyEmailResponse;
 import com.promise.manager_restaurant.service.AuthService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/register")
-    ApiResponse<RegisterResponse> createUser(@RequestBody @Valid RegisterRequest request) {
+    ApiResponse<RegisterResponse> createUser(@RequestBody @Valid RegisterRequest request) throws MessagingException {
 
         return ApiResponse.<RegisterResponse>builder()
                 .data(authService.register(request))
@@ -54,5 +53,12 @@ public class AuthController {
     ApiResponse<Void> logout(@RequestBody @Valid LogoutRequest request) throws ParseException, JOSEException {
         authService.logout(request);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/verify_email")
+    ApiResponse<VerifyEmailResponse> verifyEmail(@RequestBody @Valid VerifyEmailRequest request) {
+        return ApiResponse.<VerifyEmailResponse>builder()
+                .data(authService.verifyEmail(request))
+                .build();
     }
 }

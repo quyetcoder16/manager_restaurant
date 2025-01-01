@@ -44,6 +44,9 @@ public enum ErrorCode {
     FOOD_NOT_IN_RESTAURANT(10033, "Food not in restaurant!", HttpStatus.BAD_REQUEST),
     //
     INVALID_PRICE(10033, "Invalid price!", HttpStatus.BAD_REQUEST),
+    NOT_VERIFY_EMAIL(10034, "Not verify email!", HttpStatus.FORBIDDEN),
+    EMAIL_NOT_FOND(10035, "Email not fonded!", HttpStatus.BAD_REQUEST),
+    OTP_IS_USED(10036, "OTP is used!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;
