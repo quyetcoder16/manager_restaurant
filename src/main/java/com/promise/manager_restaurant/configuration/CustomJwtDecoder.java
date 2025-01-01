@@ -8,6 +8,7 @@ import com.promise.manager_restaurant.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -57,11 +58,14 @@ public class CustomJwtDecoder implements JwtDecoder {
                 throw new JwtException("INVALID_TOKEN"); // Ném lỗi cụ thể
             }
         } catch (AppException appException) {
-            log.error(appException.getErrorCode().name());
-            throw new JwtException(appException.getErrorCode().name());
+            throw new AuthenticationServiceException(appException.getErrorCode().name(), appException);
         } catch (JOSEException | ParseException e) {
             throw new JwtException("TOKEN_VERIFICATION_FAILED");
         }
+//        } catch (JwtException jwtException) {
+//            // Propagate JwtException wrapped in AuthenticationException
+//            throw new AuthenticationServiceException("JWT processing error", jwtException);
+//        }
 
         // Bước 2: Khởi tạo NimbusJwtDecoder nếu chưa được khởi tạo
         if (Objects.isNull(nimbusJwtDecoder)) {

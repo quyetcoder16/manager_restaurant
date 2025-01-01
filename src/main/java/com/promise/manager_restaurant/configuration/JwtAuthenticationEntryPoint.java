@@ -30,6 +30,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         Throwable rootCause = authException;
         while (rootCause.getCause() != null) {
             rootCause = rootCause.getCause(); // Tìm nguyên nhân gốc
+            System.out.println("=====>" + rootCause.getMessage());
         }
 
         // Log thông tin nguyên nhân gốc
@@ -60,7 +61,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         response.flushBuffer();
     }
-
 
 
 }
