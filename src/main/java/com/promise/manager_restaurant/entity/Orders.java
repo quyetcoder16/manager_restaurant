@@ -34,4 +34,8 @@ public class Orders extends BaseEntity {
     @OneToMany(mappedBy = "order")
     List<OrderDetail> listOrderDetail;
 
+    @ManyToOne
+    @JoinColumn(name = "deli_id")
+    DeliveryInformation deliveryInformation;
+
 }

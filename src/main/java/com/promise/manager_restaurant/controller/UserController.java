@@ -1,10 +1,15 @@
 package com.promise.manager_restaurant.controller;
 
+import com.promise.manager_restaurant.dto.request.delivery_information.DeliveryInformationRequest;
 import com.promise.manager_restaurant.dto.request.user.ChangePasswordUserRequest;
 import com.promise.manager_restaurant.dto.request.user.UserUpdateRequest;
 import com.promise.manager_restaurant.dto.response.ApiResponse;
+import com.promise.manager_restaurant.dto.response.delivery_information.DeliveryInforResponse;
+import com.promise.manager_restaurant.dto.response.order.OrderResponse;
 import com.promise.manager_restaurant.dto.response.user.UserResponse;
+import com.promise.manager_restaurant.service.DeliveryInformationService;
 import com.promise.manager_restaurant.service.FilesStorageService;
+import com.promise.manager_restaurant.service.OrderService;
 import com.promise.manager_restaurant.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -16,12 +21,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
     UserService userService;
+    DeliveryInformationService deliveryInformationService;
+    OrderService orderService;
     FilesStorageService filesStorageService;
 
 
@@ -49,4 +58,27 @@ public class UserController {
                 .build(), HttpStatus.OK);
     }
 
+    @PostMapping("/deliveries")
+    public ApiResponse<DeliveryInforResponse> addDeliveryInformation(@RequestBody @Valid DeliveryInformationRequest request){
+        return ApiResponse.<DeliveryInforResponse>builder()
+                .data(deliveryInformationService.addDeliveryInformation(request))
+                .message("Delivery added successfully!")
+                .build();
+    }
+
+    @GetMapping("/deliveries")
+    public ApiResponse<List<DeliveryInforResponse>> getAllDeliveryInformation(){
+        return ApiResponse.<List<DeliveryInforResponse>>builder()
+                .data(deliveryInformationService.getAllDeliveryInformation())
+                .message("Delivery list successfully!")
+                .build();
+    }
+
+    @GetMapping("/orders")
+    public ApiResponse<List<OrderResponse>> getAllOrders(){
+        return ApiResponse.<List<OrderResponse>>builder()
+                .data(orderService.getAllOrderOfUser())
+                .message("Order list successfully!")
+                .build();
+    }
 }

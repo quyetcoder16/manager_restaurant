@@ -58,4 +58,6 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "manager")
     List<Restaurant> listRestaurant;
 
+    @OneToMany(mappedBy = "user" )
+    List<DeliveryInformation> listDeliveryInformation;
 }

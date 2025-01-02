@@ -48,6 +48,14 @@ public enum ErrorCode {
     NOT_VERIFY_EMAIL(10034, "Not verify email!", HttpStatus.FORBIDDEN),
     EMAIL_NOT_FOND(10035, "Email not fonded!", HttpStatus.BAD_REQUEST),
     OTP_IS_USED(10036, "OTP is used!", HttpStatus.BAD_REQUEST),
+    //Order
+    STATUS_NOT_EXISTED(10037, "Status not existed!", HttpStatus.BAD_REQUEST),
+    QUANTITY_EQUAL_OR_MORE_1(10038, "Quantity equal or more than 1!", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_EXISTED(10039, "Order not existed!", HttpStatus.BAD_REQUEST),
+    ORDER_EXISTED(10040, "Order already existed!", HttpStatus.BAD_REQUEST),
+    DELIVERY_NOT_EXISTED(10041, "Delivery not existed!", HttpStatus.BAD_REQUEST),
+    CAN_NOT_UPDATE_ORDER(10042, "Can not update order!", HttpStatus.BAD_REQUEST),
+    LIST_FOOD_IS_EMPTY(10043, "List food is empty!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;
