@@ -5,6 +5,7 @@ import com.promise.manager_restaurant.dto.request.order.OrderCreationRequest;
 
 import com.promise.manager_restaurant.dto.request.order.OrderUpdateRequest;
 import com.promise.manager_restaurant.dto.response.order.OrderResponse;
+import com.promise.manager_restaurant.dto.response.order.OrderStatusResponse;
 import com.promise.manager_restaurant.dto.response.order_item.OrderItemResponse;
 import com.promise.manager_restaurant.entity.*;
 import com.promise.manager_restaurant.entity.keys.KeyOrderDetail;
@@ -231,5 +232,19 @@ public class OrderServiceImpl implements OrderService {
                     .build();
         }).toList();
         return orderResponseList;
+    }
+
+
+    @Override
+    public List<OrderStatusResponse> getAllOrderStatus() {
+        List<OrderStatusResponse> orderStatusResponseList = orderStatusRepostiory.findAll().stream().map(orderStatus ->
+        {
+            return OrderStatusResponse.builder()
+                    .orderStatusId(orderStatus.getOrderStatusId())
+                    .nameStatus(orderStatus.getNameStatus())
+                    .description(orderStatus.getDescription())
+                    .build();
+        }).toList();
+        return orderStatusResponseList;
     }
 }

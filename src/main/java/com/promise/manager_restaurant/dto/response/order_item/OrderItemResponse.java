@@ -17,5 +17,5 @@ public class OrderItemResponse {
     String foodName;
     Integer quantity;
     double price;
-    LocalDateTime createDate;
+
 }

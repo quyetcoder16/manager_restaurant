@@ -56,6 +56,7 @@ public enum ErrorCode {
     DELIVERY_NOT_EXISTED(10041, "Delivery not existed!", HttpStatus.BAD_REQUEST),
     CAN_NOT_UPDATE_ORDER(10042, "Can not update order!", HttpStatus.BAD_REQUEST),
     LIST_FOOD_IS_EMPTY(10043, "List food is empty!", HttpStatus.BAD_REQUEST),
+    ORDER_STATUS_NOT_EXISTED(10044, "Order status not existed!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;

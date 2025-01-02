@@ -25,5 +25,7 @@ public class OrderResponse {
 
     List<OrderItemResponse> listOrderItems;
 
+    String orderStatus;
+
     Double totalPrice;
 }
