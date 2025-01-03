@@ -60,6 +60,7 @@ public enum ErrorCode {
     //RATING FOOD
     RATINGFOOD_NOT_EXISTED(10045, "Rating food not existed!", HttpStatus.BAD_REQUEST),
     YOU_MUST_BUY_PRODUCT(10046, "You must buy a product!", HttpStatus.BAD_REQUEST),
+    RATINGRESTAURENT_NOT_EXISTED(10047, "Ratingrestaurent not existed!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;
