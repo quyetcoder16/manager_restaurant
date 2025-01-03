@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.controller;
 
+import com.promise.manager_restaurant.dto.request.delivery_information.DeliveryInforUpdateRequest;
 import com.promise.manager_restaurant.dto.request.delivery_information.DeliveryInformationRequest;
 import com.promise.manager_restaurant.dto.request.user.ChangePasswordUserRequest;
 import com.promise.manager_restaurant.dto.request.user.UserUpdateRequest;
@@ -63,6 +64,22 @@ public class UserController {
         return ApiResponse.<DeliveryInforResponse>builder()
                 .data(deliveryInformationService.addDeliveryInformation(request))
                 .message("Delivery added successfully!")
+                .build();
+    }
+
+    @PutMapping("/deliveries")
+    public ApiResponse<DeliveryInforResponse> updateDeliveryInformation(@RequestBody @Valid DeliveryInforUpdateRequest request){
+        return ApiResponse.<DeliveryInforResponse>builder()
+                .data(deliveryInformationService.updateDeliveryInformation(request))
+                .message("Delivery added successfully!")
+                .build();
+    }
+
+    @DeleteMapping("deliveries/{deliId}")
+    public ApiResponse<Void> deleteDeliveryInformation(@PathVariable String deliId){
+        deliveryInformationService.deleteDeliveryInformation(deliId);
+        return ApiResponse.<Void>builder()
+                .message("Delivery deleted successfully!")
                 .build();
     }
 
