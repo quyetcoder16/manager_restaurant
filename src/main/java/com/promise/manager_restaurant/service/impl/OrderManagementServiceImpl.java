@@ -64,6 +64,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                     .address(order.getDeliveryInformation().getAddress())
                     .nameRestaurant(order.getRestaurant().getTitle())
                     .listOrderItems(orderItemResponseList)
+                    .orderStatus(order.getOrderStatus().getOrderStatusId())
                     .totalPrice(total)
                     .build();
         }).toList();
@@ -84,7 +85,11 @@ public class OrderManagementServiceImpl implements OrderManagementService {
         User existedUser = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        List<Orders> orders = orderRepository.findAllByRestaurantIn(existedUser.getListRestaurant());
+        List<Orders> orders = new ArrayList<>();
+
+        existedUser.getListRestaurant().forEach(restaurant -> {
+            orders.addAll(restaurant.getListOrder());
+        });
 
         List<OrderResponse> orderResponseList = orders.stream().map(order -> {
             List<OrderDetail> orderDetailList = new ArrayList<>();
@@ -109,6 +114,7 @@ public class OrderManagementServiceImpl implements OrderManagementService {
                     .address(order.getDeliveryInformation().getAddress())
                     .nameRestaurant(order.getRestaurant().getTitle())
                     .listOrderItems(orderItemResponseList)
+                    .orderStatus(order.getOrderStatus().getOrderStatusId())
                     .totalPrice(total)
                     .build();
         }).toList();

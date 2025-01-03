@@ -24,7 +24,7 @@ public class Orders extends BaseEntity {
     User user;
 
     @ManyToOne
-    @JoinColumn(name = "res_id")
+    @JoinColumn(name = "res_id" , referencedColumnName = "res_id")
     Restaurant restaurant;
 
     @ManyToOne

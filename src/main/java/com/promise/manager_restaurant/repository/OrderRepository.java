@@ -13,4 +13,6 @@ public interface OrderRepository extends JpaRepository<Orders, String> {
     List<Orders> findAllByRestaurant(Restaurant restaurant);
 
     List<Orders> findAllByRestaurantIn(List<Restaurant> restaurants);
+
+    List<Orders> findByRestaurantIn(Collection<Restaurant> restaurants);
 }
