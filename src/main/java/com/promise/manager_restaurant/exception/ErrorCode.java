@@ -57,6 +57,9 @@ public enum ErrorCode {
     CAN_NOT_UPDATE_ORDER(10042, "Can not update order!", HttpStatus.BAD_REQUEST),
     LIST_FOOD_IS_EMPTY(10043, "List food is empty!", HttpStatus.BAD_REQUEST),
     ORDER_STATUS_NOT_EXISTED(10044, "Order status not existed!", HttpStatus.BAD_REQUEST),
+    //RATING FOOD
+    RATINGFOOD_NOT_EXISTED(10045, "Rating food not existed!", HttpStatus.BAD_REQUEST),
+    YOU_MUST_BUY_PRODUCT(10046, "You must buy a product!", HttpStatus.BAD_REQUEST),
     ;
     private int errorCode;
     private String errorMsg;

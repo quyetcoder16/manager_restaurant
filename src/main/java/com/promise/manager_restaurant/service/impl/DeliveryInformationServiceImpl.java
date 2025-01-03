@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.service.impl;
 
+import com.promise.manager_restaurant.dto.request.delivery_information.DeliveryInforUpdateRequest;
 import com.promise.manager_restaurant.dto.request.delivery_information.DeliveryInformationRequest;
 import com.promise.manager_restaurant.dto.response.delivery_information.DeliveryInforResponse;
 import com.promise.manager_restaurant.entity.DeliveryInformation;
@@ -52,6 +53,54 @@ public class DeliveryInformationServiceImpl implements DeliveryInformationServic
                 .phone(saved.getPhone())
                 .fullName(saved.getFullName())
                 .build();
+    }
+
+    @Override
+    public DeliveryInforResponse updateDeliveryInformation(DeliveryInforUpdateRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String userId = authentication.getName();
+
+        User exitedUser = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        DeliveryInformation existedDelivery = deliveryInformationRepository.findById(request.getDelveryId())
+                .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
+
+        if (request.getFullName() == null) {
+            request.setFullName(existedDelivery.getFullName());
+        }
+
+        if (request.getAddress() == null) {
+            request.setAddress(existedDelivery.getAddress());
+        }
+
+        if (request.getPhone() == null) {
+            request.setPhone(existedDelivery.getPhone());
+        }
+
+        DeliveryInformation deliveryInformation = DeliveryInformation.builder()
+                .user(exitedUser)
+                .phone(request.getPhone())
+                .address(request.getAddress())
+                .fullName(request.getFullName())
+                .build();
+
+        DeliveryInformation saved = deliveryInformationRepository.save(deliveryInformation);
+        return DeliveryInforResponse.builder()
+                .deliveryId(saved.getDeliId())
+                .address(saved.getAddress())
+                .phone(saved.getPhone())
+                .fullName(saved.getFullName())
+                .build();
+    }
+
+    @Override
+    public void deleteDeliveryInformation(String requestId) {
+        DeliveryInformation existedDelivery = deliveryInformationRepository.findById(requestId)
+                .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
+
+        deliveryInformationRepository.delete(existedDelivery);
     }
 
     @Override
