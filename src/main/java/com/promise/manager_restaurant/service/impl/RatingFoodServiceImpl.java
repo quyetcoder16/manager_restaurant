@@ -3,11 +3,10 @@ package com.promise.manager_restaurant.service.impl;
 import com.promise.manager_restaurant.dto.request.rating_food.RatingFoodRequest;
 import com.promise.manager_restaurant.dto.response.rating_food.RatingFoodResponse;
 import com.promise.manager_restaurant.entity.*;
+import com.promise.manager_restaurant.entity.keys.KeyOrderDetail;
 import com.promise.manager_restaurant.exception.AppException;
 import com.promise.manager_restaurant.exception.ErrorCode;
-import com.promise.manager_restaurant.repository.FoodRepository;
-import com.promise.manager_restaurant.repository.RatingFoodRepository;
-import com.promise.manager_restaurant.repository.UserRepository;
+import com.promise.manager_restaurant.repository.*;
 import com.promise.manager_restaurant.service.RatingFoodService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -28,6 +27,10 @@ public class RatingFoodServiceImpl implements RatingFoodService {
     UserRepository userRepository;
 
     FoodRepository foodRepository;
+
+    OrderRepository orderRepository;
+
+    OrderItemRepository orderItemRepository;
     @Override
     public RatingFoodResponse createRatingFood(RatingFoodRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -40,20 +43,26 @@ public class RatingFoodServiceImpl implements RatingFoodService {
         Food existedFood = foodRepository.findById(request.getFoodId())
                 .orElseThrow(() -> new AppException(ErrorCode.FOOD_NOT_EXISTED));
 
+        Orders existedOrder = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        if (!existedOrder.getUser().getUserId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+
+        KeyOrderDetail keyOrderDetail = new KeyOrderDetail();
+        keyOrderDetail.setOrderId(request.getOrderId());
+        keyOrderDetail.setFoodId(request.getFoodId());
+
+        OrderDetail existedOrderDetail = orderItemRepository.findById(keyOrderDetail)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_ITEM_NOT_EXISTED));
+
+        if ( existedOrderDetail.getIsRating() != null && existedOrderDetail.getIsRating() == true){
+            throw new AppException(ErrorCode.YOU_RATED_FOOD);
+        }
+
         if (existedFood.getListOrderDetail() == null){
-            throw new AppException(ErrorCode.YOU_MUST_BUY_PRODUCT);
-        }
-
-        boolean checkUserBuy = false;
-
-        for (OrderDetail orderDetail : existedFood.getListOrderDetail()){
-            Orders order = orderDetail.getOrder();
-            if (order.getUser().getUserId().equals(userId)){
-                checkUserBuy = true;
-                break;
-            }
-        }
-        if (!checkUserBuy){
             throw new AppException(ErrorCode.YOU_MUST_BUY_PRODUCT);
         }
 
@@ -65,6 +74,10 @@ public class RatingFoodServiceImpl implements RatingFoodService {
                 .build();
 
         RatingFood saved = ratingFoodRepository.save(ratingFood);
+
+        if (saved != null){
+            existedOrderDetail.setIsRating(true);
+        }
 
         return RatingFoodResponse.builder()
                 .ratingFoodId(saved.getRatingFoodId())

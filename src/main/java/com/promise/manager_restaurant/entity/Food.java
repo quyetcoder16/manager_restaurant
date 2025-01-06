@@ -47,4 +47,8 @@ public class Food extends BaseEntity {
 
     @OneToMany(mappedBy = "food")
     List<OrderDetail> listOrderDetail;
+
+    @ManyToOne
+    @JoinColumn(name = "promo_id")
+    Promo promo;
 }

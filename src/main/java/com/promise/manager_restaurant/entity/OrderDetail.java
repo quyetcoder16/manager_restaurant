@@ -28,4 +28,7 @@ public class OrderDetail extends BaseEntity {
     @Column(name = "quantity")
     int quantity;
 
+    @Column(name = "is_rating")
+    Boolean isRating;
+
 }

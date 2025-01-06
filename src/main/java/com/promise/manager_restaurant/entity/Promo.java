@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "promo")
@@ -24,11 +25,14 @@ public class Promo extends BaseEntity {
     Restaurant restaurant;
 
     @Column(name = "percent")
-    double percent;
+    int percent;
 
     @Column(name = "start_date")
     LocalDate startDate;
 
     @Column(name = "end_date")
     LocalDate endDate;
+
+    @OneToMany(mappedBy = "promo")
+    List<Food> listFoods;
 }
