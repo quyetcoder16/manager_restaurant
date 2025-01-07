@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.service;
 
+import com.promise.manager_restaurant.dto.request.rating_restaurant.RatingResUpdateRequest;
 import com.promise.manager_restaurant.dto.request.rating_restaurant.RatingRestaurantRequest;
 import com.promise.manager_restaurant.dto.response.rating_restaurant.RatingRestaurantResponse;
 import org.springframework.stereotype.Service;
@@ -8,5 +9,6 @@ import org.springframework.stereotype.Service;
 public interface RatingRestaurantService {
 
     public RatingRestaurantResponse createRatingRestaurant(RatingRestaurantRequest request);
+    public RatingRestaurantResponse updateRatingRestaurant(RatingResUpdateRequest request);
     public void deleteRatingRestaurant(String request);
 }

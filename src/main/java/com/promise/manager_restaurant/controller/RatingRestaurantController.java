@@ -1,6 +1,7 @@
 package com.promise.manager_restaurant.controller;
 
 import com.promise.manager_restaurant.dto.request.rating_food.RatingFoodRequest;
+import com.promise.manager_restaurant.dto.request.rating_restaurant.RatingResUpdateRequest;
 import com.promise.manager_restaurant.dto.request.rating_restaurant.RatingRestaurantRequest;
 import com.promise.manager_restaurant.dto.response.ApiResponse;
 import com.promise.manager_restaurant.dto.response.rating_food.RatingFoodResponse;
@@ -25,6 +26,14 @@ public class RatingRestaurantController {
         return ApiResponse.<RatingRestaurantResponse>builder()
                 .data(ratingRestaurantService.createRatingRestaurant(request))
                 .message("Create rating food successfully")
+                .build();
+    }
+
+    @PutMapping
+    public ApiResponse<RatingRestaurantResponse> updateRatingFood(@RequestBody RatingResUpdateRequest request) {
+        return ApiResponse.<RatingRestaurantResponse>builder()
+                .data(ratingRestaurantService.updateRatingRestaurant(request))
+
                 .build();
     }
 
