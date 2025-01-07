@@ -1,5 +1,6 @@
 package com.promise.manager_restaurant.dto.request.promo;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -21,6 +22,9 @@ public class PromoRequest {
     int percent;
 
     LocalDate startDate;
+
+    @NotBlank
+    String promoCode;
 
     LocalDate endDate;
 

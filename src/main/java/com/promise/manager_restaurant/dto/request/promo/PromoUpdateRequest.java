@@ -24,6 +24,9 @@ public class PromoUpdateRequest {
     List<String> listFoods;
 
     @NotBlank
+    String promoCode;
+
+    @NotBlank
     Integer percent;
 
     @NotBlank

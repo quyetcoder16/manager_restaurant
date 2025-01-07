@@ -20,6 +20,9 @@ public class Promo extends BaseEntity {
     @Column(name = "promo_id")
     String promoId;
 
+    @Column(name = "promo_code")
+    String promoCode;
+
     @ManyToOne
     @JoinColumn(name = "res_id")
     Restaurant restaurant;

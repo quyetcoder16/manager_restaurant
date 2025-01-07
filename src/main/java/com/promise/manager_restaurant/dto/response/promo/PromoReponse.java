@@ -15,6 +15,8 @@ public class PromoReponse {
 
     String promoId;
 
+    String promoCode;
+
     String resId;
 
     List<String> foodIds;

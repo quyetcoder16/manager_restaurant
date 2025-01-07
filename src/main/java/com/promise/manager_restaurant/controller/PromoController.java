@@ -39,4 +39,26 @@ public class PromoController {
         promoService.deletePromo(promdId);
         return ApiResponse.<Void>builder().message("Delete Promo successfully").build();
     }
+
+    @PostMapping("/create_promo_manager")
+    public ApiResponse<PromoReponse> createPromoMana(@RequestBody PromoRequest request) {
+        return ApiResponse.<PromoReponse>builder()
+                .data(promoService.createPromoManagement(request))
+                .message("Create Promo successfully")
+                .build();
+    }
+
+    @PutMapping("/update_promo_manager")
+    public ApiResponse<PromoReponse> updatePromodManager(@RequestBody PromoUpdateRequest request) {
+        return ApiResponse.<PromoReponse>builder()
+                .data(promoService.updatePromoManagement(request))
+                .message("update Promo successfully")
+                .build();
+    }
+
+    @DeleteMapping("/delete_promo_manager/{promdId}")
+    public ApiResponse<Void> deletePromodManager(@PathVariable String promdId) {
+        promoService.deletePromoManagement(promdId);
+        return ApiResponse.<Void>builder().message("Delete Promo successfully").build();
+    }
 }
